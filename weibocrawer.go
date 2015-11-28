@@ -79,7 +79,7 @@ func StyleParseNextPage(crawinstanceuuid,fireurl,uid string,pageno int,dbe *Exec
   //https://regex101.com/r/wQ6mY2/1
 
   if err != nil {
-    return -1,err
+    return -1,-1,err
   }
 
   sf:=pagerx.FindStringSubmatch(s)
@@ -107,6 +107,31 @@ func StyleMkcrawinst(crawas,crawua,crawnote,crawcookie string,dbe *ExecTimeDbS)s
   if err != nil {
     return nil,err
   }
-  
+
   return cluuid,nil
+}
+
+func Docraw(uid,crawinstanceuuid string,dbe *ExecTimeDbS)int,error{
+
+  var cup,maxp int
+  cup=1
+  maxp=100
+  for cup!=maxp {
+    url:=StyleComputePageurl(uid,cup)
+    _,err:=StyleGetTo(crawinstanceuuid,url,uid,cup,dbe)
+    if err != nil {
+      return cup,err
+    }
+    ifcup,maxp,err:=StyleParseNextPage(crawinstanceuuid,url,uid,cup,dbe)
+
+    if err != nil {
+      fmt.Println(err)
+      fmt.Println("Failed to obtain page information")
+    }
+
+    fmt.Printf("%v/%vpage@%v",ifcup,maxp,uid)
+  
+
+  }
+
 }
