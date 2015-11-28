@@ -2,6 +2,7 @@ package main
 import "net/http"
 import "time"
 import "github.com/PuerkitoBio/goquery"
+import "strconv"
 
 func StyleGetTo(crawinstanceuuid,fireurl,uid string,pageno int,dbe *ExecTimeDbS)int,error{
 
@@ -54,16 +55,37 @@ func StyleGetTo(crawinstanceuuid,fireurl,uid string,pageno int,dbe *ExecTimeDbS)
 }
 
 
-func StyleParseNextPage(crawinstanceuuid,fireurl,uid string,pageno int,dbe *ExecTimeDbS)int,error{
+func StyleParseNextPage(crawinstanceuuid,fireurl,uid string,pageno int,dbe *ExecTimeDbS)int,int,error{
 
   var ctx string
 
   err:=dbe.Dbc.QueryRow("SELECT ctx FROM crawbuffer WHERE crawinstanceuuid=? AND uid=? AND pageno=? AND firedurl=?",crawinstanceuuid,uid,pageno,fireurl).Scan(&ctx)
 
   if err != nil {
-    return 0,err
+    return -1,err
   }
 
+  gq:=goquery.NewDocumentFromReader(strings.NewReader(ctx))
+
+  s:=gq.Find("div.pa#pagelist form div").First().Children().Last().Text()
+
+  if s==""{
+    return -1,errors.New("Assert Fail:no page count")
+  }
+
+  pagerx,err:=regexp.Compile(`(?:[\t\n\v\f\r ])*?(?P<currentpage>(?:\d)*)/(?P<maxpage>(?:\d)*)页`)
+  //https://regex101.com/r/wQ6mY2/1
+
+  if err != nil {
+    return -1,err
+  }
+
+  sf:=pagerx.FindStringSubmatch(s)
 
 
+
+  rs:=strconv.Atoi(sf[1])//maxpage
+  cs:=strconv.Atoi(sf[0])//currentpage
+
+  return cs,rs,nil
 }
