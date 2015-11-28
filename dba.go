@@ -17,12 +17,7 @@ func dbafc(argm []string) {
 
 	switch argm[0] {
 
-
-
-
-
 	case "ExecRawSql", "ERS", "ers":
-
 
 		if len(argm) < 2 {
 			fmt.Println("assert fail: Arg len")
@@ -45,7 +40,7 @@ func dbafc(argm []string) {
 
 		transaction := db.Begin()
 
-		res, err :=  transaction.Exec(execsql)
+		res, err := transaction.Exec(execsql)
 
 		if err != nil {
 			fmt.Println(err)
@@ -72,40 +67,26 @@ func dbafc(argm []string) {
 
 		fmt.Printf("%v Rows was Affected.", ir)
 
+	case "SetConf", "SF", "sf":
 
+		if len(argm) < 3 {
+			fmt.Println("assert fail: Arg len")
+			return
+		}
 
-
-
-
-
-
-	case "SetConf","SF","sf":
-
-    if len(argm) < 3 {
-      fmt.Println("assert fail: Arg len")
-      return
-    }
-
-
-
-    res, err := db.Exec("DELETE FROM programma_configure WHERE confname=?;",argm[1])
+		res, err := db.Exec("DELETE FROM programma_configure WHERE confname=?;", argm[1])
 
 		if err != nil {
 			fmt.Println(err)
 		}
 
-		res, err = db.Exec("INSERT INTO programma_configure(confname,cfncval) VALUES (?,?)",argm[1],argm[2])
+		res, err = db.Exec("INSERT INTO programma_configure(confname,cfncval) VALUES (?,?)", argm[1], argm[2])
 
 		if err != nil {
 			fmt.Println(err)
 		}
 
-
-
-
-
-
-	case "CatConf","CF","cf":
+	case "CatConf", "CF", "cf":
 
 		if len(argm) < 2 {
 			fmt.Println("assert fail: Arg len")
