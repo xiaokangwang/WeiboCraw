@@ -5,7 +5,7 @@ import "database/sql"
 import _ "github.com/mattn/go-sqlite3"
 import "io/ioutil"
 
-func dbafc(argm []string) {
+func Dbafc(argm []string) {
 
 	var err error
 	db, err := sql.Open("sqlite3", "file:weibopulldb.sqlite")
