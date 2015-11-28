@@ -93,6 +93,6 @@ func StyleParseNextPage(crawinstanceuuid,fireurl,uid string,pageno int,dbe *Exec
 
 func StyleComputePageurl(uid string,pageno int)string{
 
-  return fmt.Sprintf("http://weibo.cn/%v?filter=1&page=%v&vt=4",uid,pageno)
+  return fmt.Sprintf(`http://weibo.cn/%v?filter=1&page=%v&vt=4`,uid,pageno)
 
 }
