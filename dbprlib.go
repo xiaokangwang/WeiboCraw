@@ -8,7 +8,7 @@ import "strings"
 type ExecTimeDbS struct{
 dbc * sql.DB
 conf *map[string]string
-ppst *map[string]*sql.Stmt
+Ppst *map[string]*sql.Stmt
 }
 
 func (e *ExecTimeDbS)Boot()error{
@@ -41,8 +41,9 @@ return confmap
 }
 
 func (e *ExecTimeDbS)BEGIN_SQL_BATCH_ACTION()(int,error){
-e.ppst=make(map[string]*sql.Stmt)
-for k, sqls := range conf {
+e.Ppst=make(map[string]*sql.Stmt)
+var count int
+for k, sqls := range e.conf {
     if(strings.HasPrefix(k,"SQL_INSTRUCTION_")){
       cust,err:=e.dbc.Prepare(sqls)
       if err!= nil{
@@ -50,7 +51,19 @@ for k, sqls := range conf {
         opt:=fmt.Sprintf("ERR @ ExecTimeDbS+BEGIN_SQL_BATCH_ACTION: \n Prepare %v | %v | %v ",k,sqls,ories)
         return -1,errors.New(opt)
       }
-      e.ppst[k]=sqls
+      e.Ppst[k]=sqls
+      count++
     }
    }
+return count
+}
+
+func (e *ExecTimeDbS)END_SQL_BATCH_ACTION()error{
+  
+  for _,sqls := range e.Ppst {
+
+    sqls.Close()
+
+  }
+  return nil
 }
