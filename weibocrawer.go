@@ -3,6 +3,7 @@ import "net/http"
 import "time"
 import "github.com/PuerkitoBio/goquery"
 import "strconv"
+import "fmt"
 
 func StyleGetTo(crawinstanceuuid,fireurl,uid string,pageno int,dbe *ExecTimeDbS)int,error{
 
@@ -88,4 +89,10 @@ func StyleParseNextPage(crawinstanceuuid,fireurl,uid string,pageno int,dbe *Exec
   cs:=strconv.Atoi(sf[0])//currentpage
 
   return cs,rs,nil
+}
+
+func StyleComputePageurl(uid string,pageno int)string{
+
+  fmt.Sprintf("http://weibo.cn/%v?filter=1&page=%v&vt=4",uid,pageno)
+
 }
