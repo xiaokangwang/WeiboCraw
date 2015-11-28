@@ -1,6 +1,7 @@
 package main
 import "net/http"
 import "time"
+import "github.com/PuerkitoBio/goquery"
 
 func StyleGetTo(crawinstanceuuid,fireurl,uid string,pageno int,dbe *ExecTimeDbS)int,error{
 
@@ -12,7 +13,11 @@ func StyleGetTo(crawinstanceuuid,fireurl,uid string,pageno int,dbe *ExecTimeDbS)
 
   var cookie,ua string
 
-  dbe.Dbc.QueryRow("SELECT crawcookie,crawua FROM crawinstance WHERE crawinstanceuuid=?",crawinstanceuuid).Scan(&cookie,&ua)
+  err=dbe.Dbc.QueryRow("SELECT crawcookie,crawua FROM crawinstance WHERE crawinstanceuuid=?",crawinstanceuuid).Scan(&cookie,&ua)
+
+  if err != nil {
+    return 0,err
+  }
 
   req, err := http.NewRequest("GET", fireurl, nil)
 
@@ -45,5 +50,20 @@ func StyleGetTo(crawinstanceuuid,fireurl,uid string,pageno int,dbe *ExecTimeDbS)
   }
 
   return len(bds),nil
+
+}
+
+
+func StyleParseNextPage(crawinstanceuuid,fireurl,uid string,pageno int,dbe *ExecTimeDbS)int,error{
+
+  var ctx string
+
+  err:=dbe.Dbc.QueryRow("SELECT ctx FROM crawbuffer WHERE crawinstanceuuid=? AND uid=? AND pageno=? AND firedurl=?",crawinstanceuuid,uid,pageno,fireurl).Scan(&ctx)
+
+  if err != nil {
+    return 0,err
+  }
+
+
 
 }
