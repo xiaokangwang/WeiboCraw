@@ -6,7 +6,7 @@ import _ "github.com/mattn/go-sqlite3"
 import "strings"
 
 type ExecTimeDbS struct {
-	dbc  *sql.DB
+	Dbc  *sql.DB
 	conf *map[string]string
 	Ppst *map[string]*sql.Stmt
 }
@@ -24,7 +24,7 @@ func (e *ExecTimeDbS) LoadConfigure() (*map[string]string, error) {
 	var err error
 	confmap := make(map[string]string)
 
-	confrow, err := e.dbc.Query("SELECT confname,cfncval FROM programma_configure")
+	confrow, err := e.Dbc.Query("SELECT confname,cfncval FROM programma_configure")
 
 	if err != nil {
 		return err
@@ -44,7 +44,7 @@ func (e *ExecTimeDbS) BEGIN_SQL_BATCH_ACTION() (int, error) {
 	var count int
 	for k, sqls := range e.conf {
 		if strings.HasPrefix(k, "SQL_INSTRUCTION_") {
-			cust, err := e.dbc.Prepare(sqls)
+			cust, err := e.Dbc.Prepare(sqls)
 			if err != nil {
 				ories := err.Error()
 				opt := fmt.Sprintf("ERR @ ExecTimeDbS+BEGIN_SQL_BATCH_ACTION: \n Prepare %v | %v | %v ", k, sqls, ories)
