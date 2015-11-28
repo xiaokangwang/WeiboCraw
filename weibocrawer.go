@@ -2,6 +2,7 @@ package main
 import "net/http"
 import "time"
 import "github.com/PuerkitoBio/goquery"
+import uuidl "github.com/satori/go.uuid"
 import "strconv"
 import "fmt"
 
@@ -45,7 +46,7 @@ func StyleGetTo(crawinstanceuuid,fireurl,uid string,pageno int,dbe *ExecTimeDbS)
     return 0,err
   }
   bds:=string(body)
-  res, err =  dbe.Dbc.Exec("INSERT INTO crawbuffer(uid,time,crawinstanceuuid,firedurl,ctx,pageno) VALUES (?,?,?,?,?,?)",uid,time.Now().Unix(),crawinstanceuuid,fireurl,bds,pageno)
+  _, err =  dbe.Dbc.Exec("INSERT INTO crawbuffer(uid,time,crawinstanceuuid,firedurl,ctx,pageno) VALUES (?,?,?,?,?,?)",uid,time.Now().Unix(),crawinstanceuuid,fireurl,bds,pageno)
 
   if err != nil {
     return 0,err
@@ -95,4 +96,17 @@ func StyleComputePageurl(uid string,pageno int)string{
 
   return fmt.Sprintf(`http://weibo.cn/%v?filter=1&page=%v&vt=4`,uid,pageno)
 
+}
+
+func StyleMkcrawinst(crawas,crawua,crawnote,crawcookie string,dbe *ExecTimeDbS)string,error{
+
+  cluuid:=string(uuidl.NewV4())
+
+  _, err =  dbe.Dbc.Exec("INSERT INTO crawinstance(crawinstanceuuid,initializedtime,crawas,crawcookie,crawnote,crawua) VALUES (?,?,?,?,?,?)",cluuid,time.Now().Unix(),crawas,crawcookie,crawnote,crawua)
+
+  if err != nil {
+    return nil,err
+  }
+  
+  return cluuid,nil
 }
