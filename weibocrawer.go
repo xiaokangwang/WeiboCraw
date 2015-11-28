@@ -137,4 +137,9 @@ func crawTaskExec(crawinstanceuuid string, dbe *ExecTimeDbS) {
 	if err != nil {
 		return err
 	}
+	for r.Next() {
+		var uid string
+		rows.Scan(&uid)
+		Docraw(uid, crawinstanceuuid, dbe)
+	}
 }
