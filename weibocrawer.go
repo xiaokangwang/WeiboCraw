@@ -7,6 +7,11 @@ import uuidl "github.com/satori/go.uuid"
 import "strconv"
 import "fmt"
 
+type weibofeeditem struct {
+	textw string
+	nid   int
+}
+
 func StyleGetTo(crawinstanceuuid, fireurl, uid string, pageno int, dbe *ExecTimeDbS) (int, error) {
 
 	conf, err := dbe.LoadConfigure()
@@ -154,4 +159,30 @@ func Setcrawtargettype(uid, typeofowner, dbe *ExecTimeDbS) {
 
 	dbe.Dbc.Exec("UPDATE weibocrawtarget SET typeofowner=? WHERE uid=?", typeofowner, uid)
 
+}
+
+func StyleParseCtx(crawinstanceuuid, fireurl, uid string, pageno int, dbe *ExecTimeDbS) error {
+
+	var ctx string
+	//weibofeediteml := make([]weibofeeditem, 0, 255)
+
+	err := dbe.Dbc.QueryRow("SELECT ctx FROM crawbuffer WHERE crawinstanceuuid=? AND uid=? AND pageno=? AND firedurl=?", crawinstanceuuid, uid, pageno, fireurl).Scan(&ctx)
+
+	if err != nil {
+		return err
+	}
+
+	gq := goquery.NewDocumentFromReader(strings.NewReader(ctx))
+
+	s := gq.Find("div.c div span.ctt").Each(func(i int, s *goquery.Selection) {
+		var item weibofeediteml
+
+		item.textw = s.Text()
+		item.nid = i
+		//weibofeediteml = append(weibofeediteml, item)
+		dbe.Dbc.Exec("INSERT INTO weibofeeds(uid,textw,page,natpage,crawinstanceuuid) VALUES (?,?,?,?,?)", uid, item.textw, pageno, item.nid, crawinstanceuuid)
+
+	})
+
+	return nil
 }

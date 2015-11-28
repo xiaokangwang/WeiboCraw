@@ -3,4 +3,4 @@ CREATE TABLE "crawinstance" ("crawinstanceuuid" TEXT, "initializedtime" INTEGER,
 CREATE TABLE "crawresult" ("uid" TEXT,"lasttime" INTEGER DEFAULT (null) ,"lastcrawedpage" INTEGER DEFAULT (0) );
 CREATE TABLE "programma_configure" ("confname" TEXT, "cfncval" );
 CREATE TABLE "weibocrawtarget" ("typeofowner" TEXT,"uid" TEXT);
-CREATE TABLE "weibofeeds" ("uid" TEXT, "textw" TEXT, "page" INTEGER, "natpage" INTEGER);
+CREATE TABLE "weibofeeds" ("uid" TEXT, "textw" TEXT, "page" INTEGER, "natpage" INTEGER, "crawinstanceuuid" TEXT);
