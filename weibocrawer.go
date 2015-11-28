@@ -143,3 +143,15 @@ func crawTaskExec(crawinstanceuuid string, dbe *ExecTimeDbS) {
 		Docraw(uid, crawinstanceuuid, dbe)
 	}
 }
+
+func Addcrawtarget(uid, dbe *ExecTimeDbS) {
+
+	dbe.Dbc.Exec("INSERT INTO weibocrawtarget(uid) VALUES(?)", uid)
+
+}
+
+func Setcrawtargettype(uid, typeofowner, dbe *ExecTimeDbS) {
+
+	dbe.Dbc.Exec("UPDATE weibocrawtarget SET typeofowner=? WHERE uid=?", typeofowner, uid)
+
+}
