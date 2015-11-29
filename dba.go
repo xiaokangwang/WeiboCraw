@@ -4,6 +4,7 @@ import "fmt"
 import "database/sql"
 import _ "github.com/mattn/go-sqlite3"
 import "io/ioutil"
+import "os"
 
 func Dbafc(argm []string) {
 
@@ -38,13 +39,13 @@ func Dbafc(argm []string) {
 
 		execsql := string(ftx)
 
-		transaction := db.Begin()
+		transaction,_ := db.Begin()
 
 		res, err := transaction.Exec(execsql)
 
 		if err != nil {
 			fmt.Println(err)
-			ir := res.RowsAffected()
+			ir,_ := res.RowsAffected()
 
 			err = transaction.Rollback()
 			if err != nil {
@@ -55,7 +56,7 @@ func Dbafc(argm []string) {
 			fmt.Printf("%v Rows was Affected, HOWEVER tx was rollbacked as an error was throwen.", ir)
 		}
 
-		ir := res.RowsAffected()
+		ir,_ := res.RowsAffected()
 
 		err = transaction.Commit()
 
@@ -74,13 +75,13 @@ func Dbafc(argm []string) {
 			return
 		}
 
-		res, err := db.Exec("DELETE FROM programma_configure WHERE confname=?;", argm[1])
+		_, err := db.Exec("DELETE FROM programma_configure WHERE confname=?;", argm[1])
 
 		if err != nil {
 			fmt.Println(err)
 		}
 
-		res, err = db.Exec("INSERT INTO programma_configure(confname,cfncval) VALUES (?,?)", argm[1], argm[2])
+		_, err = db.Exec("INSERT INTO programma_configure(confname,cfncval) VALUES (?,?)", argm[1], argm[2])
 
 		if err != nil {
 			fmt.Println(err)

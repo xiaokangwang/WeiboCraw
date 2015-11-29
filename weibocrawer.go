@@ -6,6 +6,10 @@ import "github.com/PuerkitoBio/goquery"
 import uuidl "github.com/satori/go.uuid"
 import "strconv"
 import "fmt"
+import "io/ioutil"
+import "strings"
+import "errors"
+import "regexp"
 
 type weibofeeditem struct {
 	textw string
@@ -14,7 +18,7 @@ type weibofeeditem struct {
 
 func StyleGetTo(crawinstanceuuid, fireurl, uid string, pageno int, dbe *ExecTimeDbS) (int, error) {
 
-	conf, err := dbe.LoadConfigure()
+	_, err := dbe.LoadConfigure()
 
 	if err != nil {
 		return 0, err
@@ -69,15 +73,15 @@ func StyleParseNextPage(crawinstanceuuid, fireurl, uid string, pageno int, dbe *
 	err := dbe.Dbc.QueryRow("SELECT ctx FROM crawbuffer WHERE crawinstanceuuid=? AND uid=? AND pageno=? AND firedurl=?", crawinstanceuuid, uid, pageno, fireurl).Scan(&ctx)
 
 	if err != nil {
-		return -1, err
+		return -1,-1, err
 	}
 
-	gq := goquery.NewDocumentFromReader(strings.NewReader(ctx))
+	gq,_ := goquery.NewDocumentFromReader(strings.NewReader(ctx))
 
 	s := gq.Find("div.pa#pagelist form div").First().Children().Last().Text()
 
 	if s == "" {
-		return -1, errors.New("Assert Fail:no page count")
+		return -1,-1, errors.New("Assert Fail:no page count")
 	}
 
 	pagerx, err := regexp.Compile(`(?:[\t\n\v\f\r ])*?(?P<currentpage>(?:\d)*)/(?P<maxpage>(?:\d)*)页`)
@@ -89,8 +93,8 @@ func StyleParseNextPage(crawinstanceuuid, fireurl, uid string, pageno int, dbe *
 
 	sf := pagerx.FindStringSubmatch(s)
 
-	rs := strconv.Atoi(sf[1]) //maxpage
-	cs := strconv.Atoi(sf[0]) //currentpage
+	rs,_ := strconv.Atoi(sf[1]) //maxpage
+	cs,_ := strconv.Atoi(sf[0]) //currentpage
 
 	return cs, rs, nil
 }
@@ -103,12 +107,12 @@ func StyleComputePageurl(uid string, pageno int) string {
 
 func StyleMkcrawinst(crawas, crawua, crawnote, crawcookie string, dbe *ExecTimeDbS) (string, error) {
 
-	cluuid := string(uuidl.NewV4())
+	cluuid := string(uuidl.NewV4().String())
 
-	_, err = dbe.Dbc.Exec("INSERT INTO crawinstance(crawinstanceuuid,initializedtime,crawas,crawcookie,crawnote,crawua) VALUES (?,?,?,?,?,?)", cluuid, time.Now().Unix(), crawas, crawcookie, crawnote, crawua)
+	_, err := dbe.Dbc.Exec("INSERT INTO crawinstance(crawinstanceuuid,initializedtime,crawas,crawcookie,crawnote,crawua) VALUES (?,?,?,?,?,?)", cluuid, time.Now().Unix(), crawas, crawcookie, crawnote, crawua)
 
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
 	return cluuid, nil
@@ -135,21 +139,21 @@ func Docraw(uid, crawinstanceuuid string, dbe *ExecTimeDbS) (int, error) {
 		fmt.Printf("%v/%vpage@%v", ifcup, maxp, uid)
 
 	}
-
+return 0,nil
 }
 func crawTaskExec(crawinstanceuuid string, dbe *ExecTimeDbS) {
 	r, err := dbe.Dbc.Query("SELECT uid FROM weibocrawtarget")
 	if err != nil {
-		return err
+		return
 	}
 	for r.Next() {
 		var uid string
-		rows.Scan(&uid)
+		r.Scan(&uid)
 		Docraw(uid, crawinstanceuuid, dbe)
 	}
 }
 
-func Addcrawtarget(uid, dbe *ExecTimeDbS) {
+func Addcrawtarget(uid string, dbe *ExecTimeDbS) {
 
 	dbe.Dbc.Exec("INSERT INTO weibocrawtarget(uid) VALUES(?)", uid)
 
@@ -172,10 +176,10 @@ func StyleParseCtx(crawinstanceuuid, fireurl, uid string, pageno int, dbe *ExecT
 		return err
 	}
 
-	gq := goquery.NewDocumentFromReader(strings.NewReader(ctx))
+	gq,_ := goquery.NewDocumentFromReader(strings.NewReader(ctx))
 
-	s := gq.Find("div.c div span.ctt").Each(func(i int, s *goquery.Selection) {
-		var item weibofeediteml
+	gq.Find("div.c div span.ctt").Each(func(i int, s *goquery.Selection) {
+		var item weibofeeditem
 
 		item.textw = s.Text()
 		item.nid = i

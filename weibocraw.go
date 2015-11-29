@@ -14,7 +14,7 @@ func main() {
 		case "commit":
 			Crawall()
 		case "tadd":
-			Addcrawtargetx(uid)
+			Addcrawtargetx(dirarg[3])
 		case "test_uid":
 			Crawuid(dirarg[3])
 		}
