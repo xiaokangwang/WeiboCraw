@@ -122,42 +122,51 @@ func Docraw(uid, crawinstanceuuid string, dbe *ExecTimeDbS) (int, error) {
 
 	var cup, maxp int
 	cup = 1
-	maxp = 100
-	for cup < maxp {
+	maxp = 2
+	for cup != maxp+1 {
 		url := StyleComputePageurl(uid, cup)
 		_, err := StyleGetTo(crawinstanceuuid, url, uid, cup, dbe)
 		if err != nil {
 			return cup, err
 		}
-		ifcup, maxp, err := StyleParseNextPage(crawinstanceuuid, url, uid, cup, dbe)
+		cup, maxp, err = StyleParseNextPage(crawinstanceuuid, url, uid, cup, dbe)
     StyleParseCtx(crawinstanceuuid, url, uid, cup, dbe)
-    fmt.Printf("%v/%vpage@%v\n", ifcup, maxp, uid)
+    fmt.Printf("%v/%vpage@%v\n", cup, maxp, uid)
 		if err != nil {
 			fmt.Println(err)
 			fmt.Println("Failed to obtain page information")
-		}else{
-      if(ifcup==maxp){
-        return maxp,nil
-      }
-    }
+		}
+
 
 
     cup++
 
 	}
+dbe.Dbc.Exec("INSERT INTO crawresult(uid,crawinstanceuuid) VALUES(?,?)", uid,crawinstanceuuid)
 return 0,nil
 }
 func crawTaskExec(crawinstanceuuid string, dbe *ExecTimeDbS) {
-	r, err := dbe.Dbc.Query("SELECT uid FROM weibocrawtarget")
+	dbe.Dbc.Exec("DELETE FROM crawresult")
+
+	r, err := dbe.Dbc.Query("SELECT DISTINCT uid FROM weibocrawtarget")
 	if err != nil {
 		return
 	}
-	for r.Next() {
-		var uid string
-		r.Scan(&uid)
-		Docraw(uid, crawinstanceuuid, dbe)
-	}
-}
+
+
+  listn:=make([]string,0,256)
+  	for r.Next() {
+  		var uid string
+  		r.Scan(&uid)
+      //fmt.Print(uid)
+      listn=append(listn,uid)
+
+  	}
+    for _,element := range listn {
+      Docraw(element, crawinstanceuuid, dbe)
+    }
+  }
+
 
 func Addcrawtarget(uid string, dbe *ExecTimeDbS) {
 
