@@ -3,6 +3,7 @@ package main
 //import "fmt"
 import "database/sql"
 import _ "github.com/mattn/go-sqlite3"
+
 //import "strings"
 
 type ExecTimeDbS struct {
@@ -18,7 +19,7 @@ func (e *ExecTimeDbS) Boot() error {
 	if err != nil {
 		return err
 	}
-	e.Dbc=db
+	e.Dbc = db
 	return nil
 }
 func (e *ExecTimeDbS) LoadConfigure() (*map[string]string, error) {
@@ -29,7 +30,7 @@ func (e *ExecTimeDbS) LoadConfigure() (*map[string]string, error) {
 	confrow, err := e.Dbc.Query("SELECT confname,cfncval FROM programma_configure")
 
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
 
 	for confrow.Next() {
@@ -38,8 +39,9 @@ func (e *ExecTimeDbS) LoadConfigure() (*map[string]string, error) {
 		confmap[confn] = confval
 	}
 	e.conf = &confmap
-	return &confmap,nil
+	return &confmap, nil
 }
+
 /*
 func (e *ExecTimeDbS) BEGIN_SQL_BATCH_ACTION() (int, error) {
 	e.Ppst = make(map[string]*sql.Stmt)

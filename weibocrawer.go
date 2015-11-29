@@ -73,15 +73,15 @@ func StyleParseNextPage(crawinstanceuuid, fireurl, uid string, pageno int, dbe *
 	err := dbe.Dbc.QueryRow("SELECT ctx FROM crawbuffer WHERE crawinstanceuuid=? AND uid=? AND pageno=? AND firedurl=?", crawinstanceuuid, uid, pageno, fireurl).Scan(&ctx)
 
 	if err != nil {
-		return -1,-1, err
+		return -1, -1, err
 	}
 
-	gq,_ := goquery.NewDocumentFromReader(strings.NewReader(ctx))
+	gq, _ := goquery.NewDocumentFromReader(strings.NewReader(ctx))
 
 	s := gq.Find("div.pa#pagelist form div").Text()
 
 	if s == "" {
-		return -1,-1, errors.New("Assert Fail:no page count")
+		return -1, -1, errors.New("Assert Fail:no page count")
 	}
 
 	pagerx, err := regexp.Compile(`(?:[\t\n\v\f\r ])*?(?P<currentpage>(?:\d)*)/(?P<maxpage>(?:\d)*)页`)
@@ -93,8 +93,8 @@ func StyleParseNextPage(crawinstanceuuid, fireurl, uid string, pageno int, dbe *
 
 	sf := pagerx.FindStringSubmatch(s)
 
-	rs,_ := strconv.Atoi(sf[2]) //maxpage
-	cs,_ := strconv.Atoi(sf[1]) //currentpage
+	rs, _ := strconv.Atoi(sf[2]) //maxpage
+	cs, _ := strconv.Atoi(sf[1]) //currentpage
 
 	return cs, rs, nil
 }
@@ -130,20 +130,18 @@ func Docraw(uid, crawinstanceuuid string, dbe *ExecTimeDbS) (int, error) {
 			return cup, err
 		}
 		cup, maxp, err = StyleParseNextPage(crawinstanceuuid, url, uid, cup, dbe)
-    StyleParseCtx(crawinstanceuuid, url, uid, cup, dbe)
-    fmt.Printf("%v/%vpage@%v\n", cup, maxp, uid)
+		StyleParseCtx(crawinstanceuuid, url, uid, cup, dbe)
+		fmt.Printf("%v/%vpage@%v\n", cup, maxp, uid)
 		if err != nil {
 			fmt.Println(err)
 			fmt.Println("Failed to obtain page information")
 		}
 
-
-
-    cup++
+		cup++
 
 	}
-dbe.Dbc.Exec("INSERT INTO crawresult(uid,crawinstanceuuid) VALUES(?,?)", uid,crawinstanceuuid)
-return 0,nil
+	dbe.Dbc.Exec("INSERT INTO crawresult(uid,crawinstanceuuid) VALUES(?,?)", uid, crawinstanceuuid)
+	return 0, nil
 }
 func crawTaskExec(crawinstanceuuid string, dbe *ExecTimeDbS) {
 	dbe.Dbc.Exec("DELETE FROM crawresult")
@@ -153,20 +151,18 @@ func crawTaskExec(crawinstanceuuid string, dbe *ExecTimeDbS) {
 		return
 	}
 
+	listn := make([]string, 0, 256)
+	for r.Next() {
+		var uid string
+		r.Scan(&uid)
+		//fmt.Print(uid)
+		listn = append(listn, uid)
 
-  listn:=make([]string,0,256)
-  	for r.Next() {
-  		var uid string
-  		r.Scan(&uid)
-      //fmt.Print(uid)
-      listn=append(listn,uid)
-
-  	}
-    for _,element := range listn {
-      Docraw(element, crawinstanceuuid, dbe)
-    }
-  }
-
+	}
+	for _, element := range listn {
+		Docraw(element, crawinstanceuuid, dbe)
+	}
+}
 
 func Addcrawtarget(uid string, dbe *ExecTimeDbS) {
 
@@ -191,7 +187,7 @@ func StyleParseCtx(crawinstanceuuid, fireurl, uid string, pageno int, dbe *ExecT
 		return err
 	}
 
-	gq,_ := goquery.NewDocumentFromReader(strings.NewReader(ctx))
+	gq, _ := goquery.NewDocumentFromReader(strings.NewReader(ctx))
 
 	gq.Find("div.c div span.ctt").Each(func(i int, s *goquery.Selection) {
 		var item weibofeeditem

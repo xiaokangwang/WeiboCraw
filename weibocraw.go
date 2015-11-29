@@ -17,6 +17,8 @@ func main() {
 			Addcrawtargetx(dirarg[3])
 		case "test_uid":
 			Crawuid(dirarg[3])
+		case "stat":
+			Crawstat()
 		}
 	}
 

@@ -39,13 +39,13 @@ func Dbafc(argm []string) {
 
 		execsql := string(ftx)
 
-		transaction,_ := db.Begin()
+		transaction, _ := db.Begin()
 
 		res, err := transaction.Exec(execsql)
 
 		if err != nil {
 			fmt.Println(err)
-			ir,_ := res.RowsAffected()
+			ir, _ := res.RowsAffected()
 
 			err = transaction.Rollback()
 			if err != nil {
@@ -56,7 +56,7 @@ func Dbafc(argm []string) {
 			fmt.Printf("%v Rows was Affected, HOWEVER tx was rollbacked as an error was throwen.", ir)
 		}
 
-		ir,_ := res.RowsAffected()
+		ir, _ := res.RowsAffected()
 
 		err = transaction.Commit()
 
