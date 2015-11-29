@@ -78,7 +78,7 @@ func StyleParseNextPage(crawinstanceuuid, fireurl, uid string, pageno int, dbe *
 
 	gq,_ := goquery.NewDocumentFromReader(strings.NewReader(ctx))
 
-	s := gq.Find("div.pa#pagelist form div").First().Children().Last().Text()
+	s := gq.Find("div.pa#pagelist form div").Text()
 
 	if s == "" {
 		return -1,-1, errors.New("Assert Fail:no page count")
@@ -93,8 +93,8 @@ func StyleParseNextPage(crawinstanceuuid, fireurl, uid string, pageno int, dbe *
 
 	sf := pagerx.FindStringSubmatch(s)
 
-	rs,_ := strconv.Atoi(sf[1]) //maxpage
-	cs,_ := strconv.Atoi(sf[0]) //currentpage
+	rs,_ := strconv.Atoi(sf[2]) //maxpage
+	cs,_ := strconv.Atoi(sf[1]) //currentpage
 
 	return cs, rs, nil
 }
@@ -123,20 +123,26 @@ func Docraw(uid, crawinstanceuuid string, dbe *ExecTimeDbS) (int, error) {
 	var cup, maxp int
 	cup = 1
 	maxp = 100
-	for cup != maxp {
+	for cup < maxp {
 		url := StyleComputePageurl(uid, cup)
 		_, err := StyleGetTo(crawinstanceuuid, url, uid, cup, dbe)
 		if err != nil {
 			return cup, err
 		}
 		ifcup, maxp, err := StyleParseNextPage(crawinstanceuuid, url, uid, cup, dbe)
-
+    StyleParseCtx(crawinstanceuuid, url, uid, cup, dbe)
+    fmt.Printf("%v/%vpage@%v\n", ifcup, maxp, uid)
 		if err != nil {
 			fmt.Println(err)
 			fmt.Println("Failed to obtain page information")
-		}
+		}else{
+      if(ifcup==maxp){
+        return maxp,nil
+      }
+    }
 
-		fmt.Printf("%v/%vpage@%v", ifcup, maxp, uid)
+
+    cup++
 
 	}
 return 0,nil
